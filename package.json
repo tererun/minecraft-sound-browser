@@ -1,0 +1,56 @@
+{
+  "name": "minecraft-sound-browser",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Minecraft Sound Browser - Browse and drag sounds to DAW",
+  "main": "dist-electron/main/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && electron-builder",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "electron-store": "^11.0.2",
+    "howler": "^2.2.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-window": "^2.2.3",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/howler": "^2.2.12",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-window": "^2.0.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "autoprefixer": "^10.4.23",
+    "concurrently": "^9.2.1",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.minecraft.soundbrowser",
+    "productName": "Minecraft Sound Browser",
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    }
+  }
+}
