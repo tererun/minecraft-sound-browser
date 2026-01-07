@@ -181,8 +181,10 @@ ipcMain.handle(
   }
 );
 
-// アイコンファイルのパス（公式ドキュメントに従い文字列で渡す）
-const iconPath = join(__dirname, "../../resources/drag-icon.png");
+// アイコンファイルのパス（本番ビルドではextraResourcesに配置される）
+const iconPath = app.isPackaged
+  ? join(process.resourcesPath, "resources", "drag-icon.png")
+  : join(__dirname, "../../resources/drag-icon.png");
 
 ipcMain.on("ondragstart", (event, filePath: string) => {
   if (!existsSync(filePath)) {
