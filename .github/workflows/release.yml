@@ -1,0 +1,99 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: windows-latest
+            platform: win
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Generate Windows icon (ico) from png
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          $sizes = @(16, 32, 48, 64, 128, 256)
+          $tempDir = "build\ico_temp"
+          New-Item -ItemType Directory -Force -Path $tempDir
+          foreach ($size in $sizes) {
+            magick icon.png -resize ${size}x${size} "$tempDir\$size.png"
+          }
+          magick $tempDir\16.png $tempDir\32.png $tempDir\48.png $tempDir\64.png $tempDir\128.png $tempDir\256.png build\icon.ico
+          Remove-Item -Recurse -Force $tempDir
+
+      - name: Build for Mac
+        if: matrix.platform == 'mac'
+        run: bun run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build for Windows
+        if: matrix.platform == 'win'
+        run: bun run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Mac artifacts
+        if: matrix.platform == 'mac'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-build
+          path: release/*.dmg
+
+      - name: Upload Windows artifacts
+        if: matrix.platform == 'win'
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-build
+          path: release/*.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Mac artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-build
+          path: release
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: win-build
+          path: release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
